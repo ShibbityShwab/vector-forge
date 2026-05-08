@@ -1,0 +1,6 @@
+{
+  "name": "VectorForge",
+  "description": "Instantly turn logos into pixel-perfect vectors using ImageTracer.js directly in your browser. Generates SVG files from raster images.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
