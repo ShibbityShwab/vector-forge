@@ -64,8 +64,9 @@ export default function App() {
   // UX State
   const [viewMode, setViewMode] = useState<'vector' | 'raster' | 'split' | 'overlay'>('vector');
   const [overlayOpacity, setOverlayOpacity] = useState(0.5);
-  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(true);
   const [showCode, setShowCode] = useState(false);
+  const [showEngine, setShowEngine] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   // Default settings optimized for crisp logo extraction
@@ -596,7 +597,7 @@ export default function App() {
     <div className="min-h-screen bg-[#f8fafc] text-slate-800 font-sans">
       
       {/* Header Navbar */}
-      <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+      <header className="bg-white border-b border-slate-200 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
         <div className="flex items-center gap-2">
           <div className="bg-indigo-600 p-1.5 md:p-2 rounded-lg"><IconWand className="w-4 h-4 md:w-5 md:h-5 text-white" /></div>
           <h1 className="text-lg md:text-xl font-extrabold tracking-tight text-slate-900">VectorForge</h1>
@@ -615,7 +616,7 @@ export default function App() {
         )}
       </header>
 
-      <main className="max-w-7xl mx-auto p-6 space-y-6">
+      <main className="w-full max-w-7xl mx-auto p-3 sm:p-4 md:p-6 pb-24 space-y-4 md:space-y-6 overflow-x-hidden">
         
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
 
@@ -647,86 +648,53 @@ export default function App() {
 
         {/* State 2: Active Workspace */}
         {previewUrl && (
-          <div className="flex flex-col space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col xl:flex-row gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 items-start">
             
-            {/* Engine Selection Bar */}
-            <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-2">
-              {ENGINES.map((eng) => (
-                <div 
-                  key={eng.id}
-                  onClick={() => setEngine(eng.id)}
-                  className={`flex-1 cursor-pointer rounded-xl p-3 md:p-4 border-2 transition-all duration-200 flex items-center justify-between ${
-                    engine === eng.id 
-                      ? 'border-indigo-600 bg-indigo-50 shadow-sm' 
-                      : 'border-transparent bg-transparent hover:bg-slate-50 hover:border-slate-200'
-                  }`}
-                >
-                  <div>
-                    <h3 className={`font-bold text-sm ${engine === eng.id ? 'text-indigo-800' : 'text-slate-700'}`}>{eng.name}</h3>
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{eng.pros[0]}</p>
-                  </div>
-                  {engine === eng.id && <IconCheck className="w-5 h-5 text-indigo-600 shrink-0" />}
-                </div>
-              ))}
-            </div>
-
-            {/* Toolbar Area */}
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-3 md:px-4 rounded-xl md:rounded-2xl shadow-sm border border-slate-200">
+            {/* LEFT: MAIN PREVIEW STAGE */}
+            <div className="relative w-full flex-1 rounded-2xl md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-inner bg-slate-50 border border-slate-200 bg-[length:20px_20px]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)' }}>
               
-              <div className="grid grid-cols-2 lg:flex bg-slate-100 p-1 rounded-xl w-full lg:w-auto gap-1">
-                <button 
-                  onClick={() => setViewMode('vector')}
-                  className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 md:px-4 py-2 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${viewMode === 'vector' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <IconVector className="w-4 h-4" /> Vector
-                </button>
-                <button 
-                  onClick={() => setViewMode('raster')}
-                  className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 md:px-4 py-2 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${viewMode === 'raster' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <IconImage className="w-4 h-4" /> Original
-                </button>
-                <button 
-                  onClick={() => setViewMode('split')}
-                  className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 md:px-4 py-2 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${viewMode === 'split' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <IconSplit className="w-4 h-4" /> Side by Side
-                </button>
-                <button 
-                  onClick={() => setViewMode('overlay')}
-                  className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 md:px-4 py-2 md:py-2 rounded-lg text-xs md:text-sm font-semibold transition-all ${viewMode === 'overlay' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                >
-                  <IconLayers className="w-4 h-4" /> Overlay
-                </button>
+              {/* Floating View Tools */}
+              <div className="absolute top-4 left-4 z-30 flex flex-col gap-2">
+                <div className="grid grid-cols-2 bg-slate-100/90 backdrop-blur-sm p-1 rounded-xl shadow-sm border border-slate-200/50">
+                  <button 
+                    onClick={() => setViewMode('vector')}
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode === 'vector' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <IconVector className="w-4 h-4" /> Vector
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('raster')}
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode === 'raster' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <IconImage className="w-4 h-4" /> Original
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('split')}
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode === 'split' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <IconSplit className="w-4 h-4" /> Side by Side
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('overlay')}
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${viewMode === 'overlay' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    <IconLayers className="w-4 h-4" /> Overlay
+                  </button>
+                </div>
+                
+                {viewMode === 'overlay' && (
+                  <div className="flex flex-col items-start gap-1 bg-white/90 backdrop-blur-sm px-4 py-3 rounded-xl border border-slate-200/50 shadow-sm animate-in fade-in">
+                    <span className="text-xs font-bold text-slate-500">Vector Opacity</span>
+                    <input 
+                      type="range" min="0" max="1" step="0.05" 
+                      value={overlayOpacity} 
+                      onChange={(e) => setOverlayOpacity(Number(e.target.value))} 
+                      className="w-full accent-indigo-600 cursor-pointer"
+                    />
+                  </div>
+                )}
               </div>
 
-              {viewMode === 'overlay' && (
-                <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 animate-in fade-in w-full md:w-auto">
-                  <span className="text-xs md:text-sm font-medium text-slate-500 whitespace-nowrap">Vector Opacity</span>
-                  <input 
-                    type="range" min="0" max="1" step="0.05" 
-                    value={overlayOpacity} 
-                    onChange={(e) => setOverlayOpacity(Number(e.target.value))} 
-                    className="w-full md:w-32 accent-indigo-600 cursor-pointer"
-                  />
-                </div>
-              )}
-
-              {engine === 'imagetracer' && extractedColors.length > 0 && !isProcessing && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full md:w-auto">
-                  <span className="text-xs md:text-sm font-medium text-slate-500 whitespace-nowrap">Detected Palette:</span>
-                  <div className="flex flex-wrap gap-1 p-1">
-                    {extractedColors.map((color, i) => (
-                      <div key={i} className="w-5 h-5 md:w-6 md:h-6 rounded-full border border-slate-200 shadow-sm" style={{ backgroundColor: color }} title={color}/>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* MAIN PREVIEW STAGE */}
-            <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-inner bg-slate-50 border border-slate-200 bg-[length:20px_20px]" style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)' }}>
-              
               {isProcessing && (
                 <div className="absolute inset-0 z-20 bg-white/90 backdrop-blur-sm flex flex-col items-center justify-center">
                   <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"/>
@@ -781,9 +749,39 @@ export default function App() {
               )}
             </div>
 
-            {/* Bottom Actions Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* RIGHT: SETTINGS PANEL */}
+            <div className="w-full xl:w-80 2xl:w-96 flex flex-col gap-4 shrink-0">
               
+              {/* Engine & Palette Card */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-bold text-slate-700 mb-2">
+                    <IconLayers className="w-5 h-5 text-indigo-500" />
+                    Engine:
+                  </label>
+                  <select 
+                      value={engine} 
+                      onChange={(e) => setEngine(e.target.value)}
+                      className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors hover:bg-slate-100"
+                    >
+                      {ENGINES.map((eng) => (
+                        <option key={eng.id} value={eng.id}>{eng.name}</option>
+                      ))}
+                  </select>
+                </div>
+
+                {engine === 'imagetracer' && extractedColors.length > 0 && !isProcessing && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <span className="text-xs font-medium text-slate-500 block mb-2">Detected Palette:</span>
+                    <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-xl border border-slate-100">
+                      {extractedColors.map((color, i) => (
+                        <div key={i} className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-slate-200 shadow-sm transition-transform hover:scale-110 cursor-pointer" style={{ backgroundColor: color }} title={color}/>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Advanced Settings Accordion */}
               <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm h-fit">
                 <button 
@@ -1016,7 +1014,6 @@ export default function App() {
               </div>
               
             </div>
-            
           </div>
         )}
 
